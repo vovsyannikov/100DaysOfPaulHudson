@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<playground version='6.0' target-platform='ios' display-mode='raw' buildActiveScheme='true' importAppTypes='true'>
+    <pages>
+        <page name='Home'/>
+        <page name='Day1'/>
+        <page name='Day2'/>
+        <page name='Checkpoint1'/>
+        <page name='Day3'/>
+        <page name='Day4'/>
+        <page name='Checkpoint2'/>
+        <page name='Day5'/>
+        <page name='Day6'/>
+        <page name='Checkpoint3'/>
+        <page name='Day7'/>
+        <page name='Day8'/>
+        <page name='Checkpoint4'/>
+        <page name='Day9'/>
+        <page name='Checkpoint5'/>
+        <page name='Day10'/>
+        <page name='Day11'/>
+        <page name='Checkpoint6'/>
+        <page name='Day12'/>
+        <page name='Checkpoint7'/>
+        <page name='Day13'/>
+        <page name='Checkpoint8'/>
+        <page name='Day14'/>
+        <page name='Checkpoint9'/>
+    </pages>
+</playground>
