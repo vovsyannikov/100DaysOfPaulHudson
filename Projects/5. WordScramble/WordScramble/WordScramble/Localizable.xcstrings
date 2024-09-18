@@ -1,0 +1,36 @@
+{
+  "sourceLanguage" : "ru",
+  "strings" : {
+    "Введите слово" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter word"
+          }
+        }
+      }
+    },
+    "Заново" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restart"
+          }
+        }
+      }
+    },
+    "Текущий счёт: %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current Score: %lld"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
