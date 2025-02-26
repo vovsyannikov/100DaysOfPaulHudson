@@ -45,8 +45,7 @@ fun WeSplitTheme(
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
 
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        else -> MaterialTheme.colorScheme
     }
 
     MaterialTheme(

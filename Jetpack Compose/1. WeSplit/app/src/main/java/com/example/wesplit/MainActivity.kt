@@ -1,27 +1,36 @@
 package com.example.wesplit
 
+import android.icu.text.DecimalFormat
+import android.icu.util.Currency
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.ElevatedFilterChip
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -31,208 +40,178 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.wesplit.ui.theme.WeSplitTheme
+import java.math.RoundingMode.*
+import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
         setContent {
-            ContentView()
-        }
-    }
-
-    @Preview(showBackground = true, showSystemUi = true)
-    @Composable
-    fun ContentView() {
-        var checkAmountString by remember { mutableStateOf("") }
-        val checkAmount = checkAmountString.let {
-            if (checkAmountString.isEmpty()) 0f else checkAmountString
-                .replace(",", ".")
-                .toFloat()
-        }
-        var people by remember { mutableIntStateOf(4) }
-        var tipPercentage by remember { mutableIntStateOf(10) }
-
-        val tipAmount = checkAmount / 100 * tipPercentage
-        val totalAmount = (checkAmount + tipAmount)
-
-        val perPersonAmount = totalAmount / people
-
-        WeSplitTheme {
-            Scaffold(
-                topBar = {
-                    Text(
-                        "Делись",
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .padding(start = 16.dp, top = 50.dp, bottom = 16.dp)
-                    )
-                }
-            ) { scaffoldPadding ->
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(30.dp),
-                    modifier = Modifier
-                        .padding(scaffoldPadding)
-                        .padding(horizontal = 16.dp)
-                ) {
-                    TextField(
-                        checkAmountString,
-                        label = { Text("Сумма") },
-                        prefix = { Text("₽") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        onValueChange = { checkAmountString = it },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 10.dp)
-                    )
-
-                    PeopleAmountMenu(people, onChanged = { people = it })
-                    PercentageSelector(tipPercentage, onClick = { tipPercentage = it })
-
-                    SumLabel("Общая сумма", totalAmount)
-                    SumLabel("Сумма с человека", perPersonAmount)
-
-                }
-            }
-        }
-    }
-
-    @Composable
-    fun PeopleAmountMenu(people: Int, onChanged: (Int) -> Unit) {
-        var peopleDropdownOpen by remember { mutableStateOf(false) }
-        val toggleDropdown = { peopleDropdownOpen = !peopleDropdownOpen }
-        val dropDownItemHeight = 40
-
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            DescriptionLabel("Количество человек")
-
-            Box {
-                Button(toggleDropdown) {
-                    Text("$people")
-                }
-
-                DropdownMenu(
-                    expanded = peopleDropdownOpen,
-                    onDismissRequest = toggleDropdown,
-                    modifier = Modifier.height((dropDownItemHeight.toFloat() * 7.5f).dp)
-                ) {
-                    for (i in 2..100) {
-                        DropdownMenuItem(
-                            text = { Text(i.toString()) },
-                            contentPadding = PaddingValues(vertical = 0.dp, horizontal = 10.dp),
-                            onClick = {
-                                onChanged(i)
-                                toggleDropdown()
-                            },
-                            modifier = Modifier
-                                .height(dropDownItemHeight.dp)
+            WeSplitTheme {
+                Scaffold(
+                    topBar = {
+                        TopAppBar(
+                            title = { Text("WeSplit", fontWeight = FontWeight.Bold) }
                         )
                     }
+                ) { innerPadding ->
+                    ContentView(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
     }
+}
 
-    @Composable
-    fun PercentageSelector(selectedPercentage: Int, onClick: (Int) -> Unit) {
-        var customPercentage by remember { mutableIntStateOf(-1) }
-        var percentageDropDownOpen by remember { mutableStateOf(false) }
-        val availablePercentages = listOf(5, 10, 15, 20, 0)
-        val toggleDropDown = { percentageDropDownOpen = !percentageDropDownOpen }
-        val percentageDropDownItemHeight = 40.dp
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ContentView(modifier: Modifier = Modifier) {
+    var checkAmountString by remember { mutableStateOf("") }
+    var numberOfPeople by remember { mutableIntStateOf(4) }
+    var tipPercentage by remember { mutableIntStateOf(20) }
+
+    var choosingNumberOfPeople by remember { mutableStateOf(false) }
+
+    val tipPercentages = listOf(10, 15, 20, 25, 0)
+
+    val currency = Currency.getInstance(Locale.getDefault())
+
+    val checkAmount = checkAmountString.replace(',', '.').toDoubleOrNull() ?: 0.0
+    val peopleCount = numberOfPeople.toDouble()
+    val tipSelection = tipPercentage.toDouble()
+    val tipValue = checkAmount / 100 * tipSelection
+    val grandTotal = checkAmount + tipValue
+    val totalPerPerson = grandTotal / peopleCount
+    val decimalFormatter = DecimalFormat("#.##")
+    decimalFormatter.currency = currency
+    decimalFormatter.roundingMode = DOWN.ordinal
+    val finalValue = decimalFormatter.format(totalPerPerson)
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(15.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 15.dp)
+    ) {
+        TextField(
+            checkAmountString,
+            onValueChange = { checkAmountString = it },
+            label = { Text("Amount") },
+            leadingIcon = { Text(currency.symbol) },
+            maxLines = 1,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            modifier = Modifier
+                .fillMaxWidth()
+        )
+
+        ExposedDropdownMenuBox(
+            choosingNumberOfPeople,
+            onExpandedChange = { choosingNumberOfPeople = it }
+        ) {
+            OutlinedTextField(
+                "$numberOfPeople people",
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = choosingNumberOfPeople) },
+                colors = ExposedDropdownMenuDefaults.textFieldColors(),
+                readOnly = true,
+                label = { Text("Number of people") },
+                onValueChange = {},
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth()
+            )
+
+            ExposedDropdownMenu(expanded = choosingNumberOfPeople,
+                onDismissRequest = { choosingNumberOfPeople = false }) {
+                for (i in 2..<100) {
+                    DropdownMenuItem(
+                        text = { Text("$i people") },
+                        leadingIcon = {
+                            if (i == numberOfPeople) {
+                                Icon(Icons.Default.Check, contentDescription = "Selected $i")
+                            }
+                        },
+                        onClick = {
+                            choosingNumberOfPeople = false
+                            numberOfPeople = i
+                        }
+                    )
+                }
+            }
+        }
 
         Column(
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 30.dp)
         ) {
-            DescriptionLabel("Сколько оставить на чай?")
+            Text("How much do you want to tip?")
 
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
             ) {
-                for (percentage in availablePercentages) {
-                    FilterChip(
-                        label = { Text("${percentage}%") },
-                        selected = selectedPercentage == percentage && customPercentage < 0,
+                for (percentage in tipPercentages) {
+                    ElevatedFilterChip(
+                        selected = percentage == tipPercentage,
                         onClick = {
-                            customPercentage = -1
-                            onClick(percentage)
-                        }
+                            tipPercentage = percentage
+                        },
+                        label = { Text("${percentage}%") }
                     )
-                }
-                Box {
-                    InputChip(
-                        selected = selectedPercentage == customPercentage,
-                        onClick = { toggleDropDown() },
-                        label = {
-                            if (customPercentage == -1) Text("Свой") else Text("$customPercentage%")
-                        }
-                    )
-                    DropdownMenu(
-                        expanded = percentageDropDownOpen,
-                        onDismissRequest = { toggleDropDown() },
-                        modifier = Modifier
-                            .height(percentageDropDownItemHeight * 7)
-                    ) {
-                        for (percent in 1..100) {
-                            DropdownMenuItem(
-                                text = { Text("$percent%") },
-                                modifier = Modifier.height(percentageDropDownItemHeight),
-                                onClick = {
-                                    customPercentage = percent
-                                    toggleDropDown()
-                                    onClick(customPercentage)
-                                }
-                            )
-                        }
-                    }
                 }
             }
         }
-    }
 
-    @Composable
-    fun DescriptionLabel(
-        text: String,
-        style: TextStyle = MaterialTheme.typography.labelMedium,
-        fontWeight: FontWeight = FontWeight.SemiBold,
-        color: Color = Color.Gray
-    ) {
-        Text(
-            text,
-            style = style,
-            fontWeight = fontWeight,
-            color = color
-        )
-    }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            Text(
+                "Final amount:",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
 
-    @Composable
-    fun SumLabel(description: String, value: Float, modifier: Modifier = Modifier) {
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = modifier) {
-            DescriptionLabel(description)
-
-            Row(verticalAlignment = Alignment.Bottom) {
+            Row{
                 Text(
-                    value.toString(),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(end = 5.dp)
+                    "$grandTotal ${currency.symbol} / $numberOfPeople = ",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = Color.LightGray,
+                    fontStyle = FontStyle.Italic
                 )
-                Text("₽", color = Color.Gray)
+
+                Text(
+                    "$finalValue ${currency.symbol}",
+                    style = MaterialTheme.typography.headlineSmall
+                )
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview
+@Composable
+fun WeSplitPreview() {
+    WeSplitTheme {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("WeSplit", fontWeight = FontWeight.Bold) }
+                )
+            }
+        ) { innerPadding ->
+            ContentView(modifier = Modifier.padding(innerPadding))
         }
     }
 }
